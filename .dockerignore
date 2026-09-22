@@ -1,0 +1,14 @@
+node_modules
+.next
+.git
+.github
+.env
+.env.*
+!.env.example
+!.env.production.example
+.mock-storage
+coverage
+*.log
+prisma/prisma/dev.db
+tsconfig.tsbuildinfo
+tests

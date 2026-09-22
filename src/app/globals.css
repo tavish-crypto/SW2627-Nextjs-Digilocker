@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f4f8fc;
+  --foreground: #132846;
+  --ink-muted: #62738a;
+  --line: #d8e3ef;
+  --panel: #ffffff;
+  --accent: #0066b3;
+  --accent-deep: #004b87;
+  --accent-soft: #e5f2fc;
+  --saffron: #f58220;
+  --green: #138808;
+  --warm: #fff4e8;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: linear-gradient(180deg, #edf5fc 0, var(--background) 220px);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), sans-serif;
+}
+
+button, input, select { font: inherit; }
+
+.eyebrow { color: var(--accent); font-size: 0.72rem; font-weight: 750; letter-spacing: 0.1em; text-transform: uppercase; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 10px 28px rgb(19 40 70 / 6%); }
+.button-primary { align-items: center; background: var(--accent); border: 1px solid var(--accent); border-radius: 5px; color: white; cursor: pointer; display: inline-flex; font-size: 0.9rem; font-weight: 650; gap: 0.5rem; justify-content: center; padding: 0.68rem 1rem; }
+.button-primary:hover { background: var(--accent-deep); }
+.button-quiet { background: transparent; border: 1px solid var(--line); border-radius: 5px; color: var(--foreground); cursor: pointer; font-size: 0.85rem; font-weight: 600; padding: 0.58rem 0.8rem; }
+.button-quiet:hover { border-color: var(--accent); color: var(--accent); }
+.gov-strip { background: linear-gradient(90deg, var(--saffron) 0 33.33%, #ffffff 33.33% 66.66%, var(--green) 66.66%); height: 4px; }
+.brand-mark { align-items: center; background: var(--accent); border-radius: 6px; color: white; display: inline-flex; font-size: 0.78rem; font-weight: 800; height: 34px; justify-content: center; letter-spacing: -0.04em; width: 34px; }
+.vault-header { background: rgb(255 255 255 / 88%); box-shadow: 0 1px 0 rgb(19 40 70 / 8%); }
+.vault-shell { position: relative; }
+.vault-shell::before { background: var(--saffron); content: ""; height: 3px; left: 0; position: absolute; top: 0; width: 72px; }
+.accent-panel { border-top: 3px solid var(--accent); }
+.document-row { transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease; }
+.document-row:hover { border-color: #91c1e4; box-shadow: 0 8px 20px rgb(0 102 179 / 9%); transform: translateY(-1px); }
+@keyframes rise-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.rise-in { animation: rise-in 420ms ease both; }

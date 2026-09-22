@@ -1,0 +1,149 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication and vault ownership
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  
+  // Local authentication
+  passwordHash String?
+  
+  // OAuth authentication
+  provider  String?  // "google" or other providers
+  image     String?  // Profile image URL
+  role      String   @default("user")
+  
+  // Relationships
+  documents Document[]
+  shareLinks ShareLink[]
+  activities DocumentActivity[]
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([email])
+}
+
+// Document model for vault documents
+model Document {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @default("")
+  type        String   @default("")  // File type (PDF, DOCX, JPG, etc.)
+  size        String   @default("")  // File size (e.g., "2.1 MB")
+  issuedOn    String   @default("")  // Issue date or upload date
+  
+  // File storage
+  fileKey     String?  // S3 or cloud storage object key
+  fileUrl     String?  // URL to the file if accessible
+  mimeType    String   @default("application/octet-stream")
+  fileSizeBytes Int?   // File size in bytes
+  
+  // Checksums and integrity
+  fileHash    String?  // SHA-256 or other hash for integrity verification
+  
+  // Ownership and access control
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Relationships
+  activities  DocumentActivity[]
+  shareLinks  ShareLink[]
+  
+  // Metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// Document activity for audit logging
+model DocumentActivity {
+  id          String   @id @default(cuid())
+  
+  // Activity details
+  action      String   // "Uploaded", "Shared", "Verified", etc.
+  description String?  // Additional details about the activity
+  
+  // Relationships
+  documentId  String
+  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Metadata
+  createdAt   DateTime @default(now())
+  
+  @@index([documentId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// Share link for document sharing with expiration
+model ShareLink {
+  id          String   @id @default(cuid())
+  
+  // Share link details
+  token       String   @unique
+  expiresAt   DateTime?
+  active      Boolean  @default(true)
+  
+  // Access control
+  maxAccess   Int      @default(-1)  // -1 for unlimited
+  accessCount Int      @default(0)
+  
+  // Relationships
+  documentId  String
+  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  
+  createdBy   String
+  createdByUser User   @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  
+  // Metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([documentId])
+  @@index([token])
+  @@index([expiresAt])
+}
+
+// Persistent fallback object storage for serverless deployments.
+// Files are split into chunks so each upload request stays comfortably below
+// serverless request-body limits.
+model StoredObject {
+  key         String              @id
+  contentType String              @default("application/octet-stream")
+  size        Int                 @default(0)
+  totalChunks Int                 @default(1)
+  chunks      StoredObjectChunk[]
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+}
+
+model StoredObjectChunk {
+  id         String       @id @default(cuid())
+  objectKey  String
+  chunkIndex Int
+  data       Bytes
+  object     StoredObject @relation(fields: [objectKey], references: [key], onDelete: Cascade)
+  createdAt  DateTime     @default(now())
+
+  @@unique([objectKey, chunkIndex])
+  @@index([objectKey])
+}
+
